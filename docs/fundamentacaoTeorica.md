@@ -19,7 +19,7 @@ Quando gases como Amônia ($NH_3$), Álcool, Benzeno ou Fumaça (que o MQ-135 de
 - 3.Agora que os elétrons estão livres novamente, a corrente elétrica flui facilmente.
 - Resultado: Com gás = Resistência Baixa.
 <div align="center">
-<img src="./Gemini_Generated_Image_uq5f6uuq5f6uuq5f.png" alt="Representação de processo químico" width="1000"/>
+<img src="./processoQuimico.png" alt="Representação de processo químico" width="1000"/>
 <br>
   <b>Figura 1:</b> Representação do Processo Químico.
 </div>
@@ -66,7 +66,7 @@ A transição da teoria para a prática envolve a integração do sensor num cir
 O método padrão para ler o MQ-135 é através de um divisor de tensão. O sensor atua como o resistor superior ($R_s$) e um resistor de carga ($R_L$) atua como o resistor inferior ligado ao terra (GND). A tensão é medida no ponto de junção entre os dois.
 
 <div align="center">
-<img src="./Gemini_Generated_Image_44mh8q44mh8q44mh.png" alt="Divisor de tensão" width="1000"/>
+<img src="./circuitoDivisorDeTensao.png" alt="Divisor de tensão" width="1000"/>
 <br>
   <b>Figura 2:</b> Circuito divisor de tensões.
 </div>
