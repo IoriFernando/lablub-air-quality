@@ -1,128 +1,140 @@
+# 🔌 Controle de Alimentação e Aquecimento dos Sensores MQ-135 via MOSFET
 
+## 1. Visão Geral do Sistema
 
+Este circuito tem como objetivo controlar o processo de aquecimento (*burn-in*) de **dois sensores MQ-135**, utilizando uma **fonte externa de 5 V** e um **Arduino Uno** apenas como unidade de controle lógico.
 
+O Arduino **não fornece corrente diretamente aos sensores**, evitando sobrecarga da placa. Em vez disso, ele controla um **MOSFET N-channel (IRF4Z34N)** configurado como chave eletrônica em **low-side**, permitindo ligar e desligar a alimentação dos sensores conforme um **temporizador de 48 horas**.
 
+Durante o aquecimento:
 
-## 🧪 Calibração do Sensor MQ-135
+- 🔴 Um **LED indicador** sinaliza que os sensores estão ativos  
+- 🖥️ Um **display LCD 16×2 com interface I2C** exibe a contagem regressiva do tempo restante  
 
-O processo de calibração inicial do sensor requer um período de aquecimento
-de aproximadamente 48 horas.
+---
 
-Para documentar esse processo, foi desenvolvida uma implementação específica
-com display LCD e contador regressivo, disponível na branch:
+## 2. Objetivos do Circuito
 
-🔗 `feature/lcd-calibration-timer`
+- Alimentar **dois sensores MQ-135** com uma fonte externa de 5 V  
+- Isolar o Arduino da corrente consumida pelos sensores  
+- Controlar o liga/desliga dos sensores via **MOSFET**  
+- Indicar visualmente o estado de aquecimento com **LED**  
+- Exibir o tempo de calibração (**48 horas**) em um **LCD I2C**  
 
+---
 
+## 3. Componentes Utilizados
 
+| Componente | Função |
+|----------|------|
+| Arduino Uno | Controle lógico e temporização |
+| 2× Sensor MQ-135 | Sensores de qualidade do ar |
+| MOSFET IRF4Z34N | Chave eletrônica (low-side) |
+| Fonte externa 5 V | Alimentação dos sensores |
+| LCD 16×2 com I2C | Exibição do temporizador |
+| LED + resistor 220 Ω | Indicador de aquecimento |
+| Resistor 10 kΩ | Pull-down no gate do MOSFET |
+| Resistor 220 Ω | Proteção do gate do MOSFET |
 
-🔌 Ligação dos sensores à fonte 5 V via MOSFET
+---
 
-Objetivo do circuito
+## 4. Conexões Elétricas
 
-Alimentar 2 sensores MQ-135 com fonte externa de 5 V
+### 4.1 Sensores MQ-135
 
-Arduino não fornece corrente dos sensores, apenas controla quando ligar/desligar via MOSFET
+| Sensor | Conexão | Destino |
+|------|-------|--------|
+| MQ-135 #1 | VCC | +5 V da fonte externa |
+| MQ-135 #2 | VCC | +5 V da fonte externa |
+| MQ-135 #1 e #2 | GND | DRAIN do MOSFET |
 
-LED indicador acende enquanto sensores estão aquecendo
+> Os dois sensores estão conectados **em paralelo** na alimentação.
 
-LCD I2C mostra o contador regressivo de 48 h
+---
 
-2️⃣ Componentes e pinos
-Componente	Pino/Conexão	Observações
-MQ-135 #1	VCC → Fonte 5 V	Paralelo com MQ-135 #2
-MQ-135 #2	VCC → Fonte 5 V	Paralelo com MQ-135 #1
-MQ-135 #1 e #2	GND → DRAIN MOSFET	Corte do GND via MOSFET
-MOSFET IRF4Z34N	GATE → Arduino D7	Resistor 220Ω em série
-MOSFET IRF4Z34N	SOURCE → GND fonte externa	GND comum com Arduino
-LED aquecimento	Anodo → Arduino D8	Resistor 220Ω em série
-LED aquecimento	Catodo → GND Arduino	Indica aquecimento ativo
-LCD I2C	SDA → Arduino SDA	A4 no UNO
-LCD I2C	SCL → Arduino SCL	A5 no UNO
-LCD I2C	VCC → Arduino 5V	
-LCD I2C	GND → Arduino GND	
-3️⃣ Explicação detalhada do fluxo de corrente
+### 4.2 MOSFET IRF4Z34N (Low-Side Switch)
 
-Fonte 5 V externa: alimenta o VCC dos dois MQ-135
+| Pino MOSFET | Conexão |
+|-----------|--------|
+| GATE | Arduino D7 (via resistor 220 Ω) |
+| SOURCE | GND da fonte externa |
+| DRAIN | GND dos sensores MQ-135 |
+| Gate–GND | Resistor 10 kΩ (pull-down) |
 
-MOSFET em low-side:
+📌 **Observação:**  
+O **GND da fonte externa é comum ao GND do Arduino**, garantindo referência elétrica correta.
 
-DRAIN conecta aos GNDs dos sensores
+---
 
-SOURCE conecta ao GND da fonte externa (que está comum com Arduino)
+### 4.3 LED Indicador de Aquecimento
 
-Gate controlado pelo Arduino (D7) → quando HIGH, MOSFET liga e sensores recebem GND → sensores aquecem
+| LED | Conexão |
+|----|--------|
+| Ânodo | Arduino D8 (via resistor 220 Ω) |
+| Cátodo | GND do Arduino |
 
-Quando LOW → MOSFET corta GND → sensores desligam
+---
 
-LED indicador de aquecimento:
+### 4.4 Display LCD I2C
 
-Conectado ao Arduino (D8 + resistor)
+| LCD I2C | Arduino Uno |
+|------|-------------|
+| SDA | A4 |
+| SCL | A5 |
+| VCC | 5 V |
+| GND | GND |
 
-Acende enquanto os sensores estão ligados (D7 HIGH)
+---
 
-LCD I2C: exibe o tempo restante de 48 h
+## 5. Diagrama Textual do Circuito
 
-4️⃣ Visualização textual do circuito
-Fonte 5V externa
-   +-------------------------------+
-   |                               |
-   |                               |
- MQ-135 #1 VCC                  MQ-135 #2 VCC
-   |                               |
-   +-----> DRAIN MOSFET IRF4Z34N ----+
-SOURCE MOSFET ------------------- GND fonte externa
-GND fonte externa ---------------- GND Arduino (comum)
+## 6. Funcionamento do Sistema
 
-Arduino UNO:
-  D7  ---> 220Ω ---> Gate MOSFET IRF4Z34N
-  Gate MOSFET --- 10kΩ ---> GND (pull-down)
+### 6.1 Inicialização
 
-  D8  ---> 220Ω ---> LED indicador de aquecimento ---> GND Arduino
+Ao energizar o sistema:
 
-LCD I2C:
-  SDA ---> Arduino A4
-  SCL ---> Arduino A5
-  VCC ---> Arduino 5V
-  GND ---> Arduino GND
+- O Arduino configura o pino **D7** como saída  
+- O MOSFET é ativado (**D7 = HIGH**)  
+- Os sensores passam a receber GND e iniciam o aquecimento  
+- O LED indicador acende  
+- O LCD exibe **48:00:00** e inicia a contagem regressiva  
 
-5️⃣ Como o circuito funciona na prática
+---
 
-Quando o Arduino liga:
+### 6.2 Durante o Aquecimento
 
-MOSFET D7 HIGH → sensores recebem GND → começam a aquecer
+- O temporizador decrementa **segundo a segundo**  
+- MOSFET permanece ligado  
+- Sensores continuam aquecendo  
+- LED permanece aceso  
+- LCD atualiza o tempo restante  
 
-LED aceso → indica “calibração em andamento”
+---
 
-LCD mostra 48:00:00 e começa contagem regressiva
-
-Durante a calibração:
-
-Contador decresce segundo a segundo
-
-LED permanece aceso
-
-MOSFET mantém os sensores ligados
+### 6.3 Final da Calibração
 
 Após 48 horas:
 
-Contador chega a 0
+- O contador chega a zero  
+- Arduino coloca **D7 em LOW**  
+- MOSFET desliga → sensores são desligados  
+- LED apaga  
+- LCD exibe a mensagem:
 
-Arduino coloca D7 LOW → MOSFET desliga → sensores desligados
+Calibracao OK
+Sensor pronto
 
-LED apaga → indica fim do aquecimento
+yaml
+Copiar código
 
-LCD mostra mensagem “Calibracao OK / Sensor pronto”
+---
 
+## 7. Considerações Técnicas Importantes
 
+- O uso de **fonte externa** evita sobrecarga do regulador do Arduino  
+- O controle em **low-side** simplifica o acionamento do MOSFET  
+- O resistor **pull-down** garante que o MOSFET permaneça desligado durante reset  
+- O sistema permite repetir o processo de calibração sempre que necessário  
 
-
-
-
-### Controle de Alimentação de Sensores MQ-135
-
-Os sensores são alimentados por uma fonte externa de 5 V (carregador de celular). 
-O Arduino atua apenas como chave, controlando um MOSFET IRF4Z34N que liga ou desliga
-a alimentação dos sensores de acordo com o timer de 48 horas.
-
-Um LED indica visualmente quando os sensores estão em aquecimento.
+---
